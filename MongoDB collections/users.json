@@ -1,0 +1,14 @@
+[{
+  "_id": {
+    "$oid": "60ae4412073708bc38e2bb33"
+  },
+  "img": null,
+  "role": "ADMIN_ROLE",
+  "blocked": "N",
+  "changePassword": null,
+  "attempts": 0,
+  "name": "Víctor",
+  "email": "victor.ach94@gmail.com",
+  "password": "$2b$10$WVKj2V2qjfWRB/p2Q8JWjeYOHtzqURcYh9etBBpFUYg2cQA0zAR0m",
+  "__v": 0
+}]
