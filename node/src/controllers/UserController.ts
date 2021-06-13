@@ -5,128 +5,135 @@ import { IResponse } from '../types/IResponse';
 import { CallbackError } from 'mongoose';
 import IUser from '../types/IUser';
 
-let response: IResponse = {
-    status: 200,
-    message: 'Okay',
-    type: ''
+const getDefaultResponse = (): IResponse => ({
+  status: 200,
+  message: 'Okay',
+  type: '',
+});
+
+const GetUsers = async (req: Request, res: Response) => {
+  let response: IResponse = getDefaultResponse();
+  const from = Number(req.query.from || 0);
+  const limit = Number(req.query.limit);
+
+  try {
+    const userQuery = Users.find({}).skip(from).limit(limit).exec();
+    const userDocuments = Users.countDocuments().exec();
+    await Promise.all([userQuery, userDocuments]);
+
+    return res.status(response.status).json({
+      users: userQuery,
+      items: userDocuments,
+    });
+  } catch (error) {
+    response = {
+      status: 400,
+      message: error.message,
+      type: error.name,
+    };
+    return res.status(response.status).json(response);
+  }
 };
-    
-const GetUsers = (req: Request, res: Response) => {
-    
-    const from = Number(req.query.from || 0);
-    const limit = Number(req.query.limit);
 
-    Users.find({})
-        .skip(from)
-        .limit(limit)
-        .exec((error: CallbackError, users: IUser[]) => {
-            if (error) {
-                response = {
-                    status: 400,
-                    message: error.message,
-                    type: error.name
-                }
-                return res.status(response.status).json(response)
-            }
+const CreateUser = async (req: Request, res: Response) => {
+  const body = req.body;
+  const { name, email, password, role } = body;
 
-            Users.countDocuments({}, (error, items) => {
-                res.json({
-                    users,
-                    items
-                });
-            });
-        })
-}
+  const user = new Users({
+    name,
+    email,
+    role,
+    password: bcrypt.hashSync(password, 10),
+  });
+  let response = getDefaultResponse();
 
-const CreateUser = (req: Request, res: Response) => {
-    const body = req.body;
-
-    const user = new Users({
-        name: body.name,
-        email: body.email,
-        password: bcrypt.hashSync(body.password, 10),
-        role: body.role
+  try {
+    const userDb = await user.save();
+    res.status(201).json({
+      user: userDb,
     });
+  } catch (error) {
+    response = {
+      status: 400,
+      message: error.message,
+      type: error.name,
+    };
+    return res.status(response.status).json(response);
+  }
+};
 
-    user.save((error: CallbackError, userDB: IUser) => {
+const UpdateUsers = (req: Request, res: Response) => {
+  const id = req.params.id;
 
-        if (error) {
-            response = {
-                status: 400,
-                message: error.message,
-                type: error.name
-            }
-            return res.status(response.status).json(response)
-        }
+  let response = getDefaultResponse();
 
-        res.status(201).json({
-            user: userDB
-        })
+  Users.findByIdAndUpdate(
+    id,
+    req.body,
+    { new: true, runValidators: true },
+    (error: CallbackError, userDB: IUser | null) => {
+      if (!userDB) {
+        response = {
+          status: 400,
+          message: 'User not found',
+          type: 'user_not_found',
+        };
+        return res.status(response.status).json(response);
+      }
 
-    });
-}
+      if (error) {
+        response = {
+          status: 400,
+          message: error.message,
+          type: error.name,
+        };
+        return res.status(response.status).json(response);
+      }
 
-const UpdateUsers =  (req: Request, res: Response) => {
-    const id = req.params.id;
-    
-    Users.findByIdAndUpdate(id, req.body, { new: true , runValidators: true }, (error: CallbackError, userDB: IUser | null) => {
-        if (!userDB) {
-            response = {
-                status: 400,
-                message: 'User not found',
-                type: 'user_not_found'
-            }
-            return res.status(response.status).json(response)
-        }
-
-        if (error) {
-            response = {
-                status: 400,
-                message: error.message,
-                type: error.name
-            }
-            return res.status(response.status).json(response)
-        }
-
-        res.json({
-            user: userDB
-        });
-    });
-}
+      res.json({
+        user: userDB,
+      });
+    }
+  );
+};
 
 const DeleteUser = (req: Request, res: Response) => {
-    const id = req.params.id;
+  const id = req.params.id;
+  let response = getDefaultResponse();
 
-    Users.findByIdAndRemove(id, {}, (error: CallbackError, userDB: IUser | null) => {
-        if (error) {
-            response = {
-                status: 400,
-                message: error.message
-            }
-            return res.status(response.status).json(response)
-        }
-
-        if ( !userDB ) {
-            response = {
-                status: 400,
-                message: 'User not found',
-                type: 'user_not_found'
-            }
-            return res.status(response.status).json(response)
-        }
-
+  Users.findByIdAndRemove(
+    id,
+    {},
+    (error: CallbackError, userDB: IUser | null) => {
+      if (error) {
         response = {
-            status: 200,
-            message: 'User deleted'
-        }
-        res.json(response);
-    });
-}
+          status: 400,
+          message: error.message,
+        };
+        return res.status(response.status).json(response);
+      }
 
+      if (!userDB) {
+        response = {
+          status: 400,
+          message: 'User not found',
+          type: 'user_not_found',
+        };
+        return res.status(response.status).json(response);
+      }
+
+      response = {
+        status: 200,
+        message: 'User deleted',
+      };
+      res.json(response);
+    }
+  );
+};
 
 export default {
-    GetUsers,
-    CreateUser,
-    UpdateUsers,
-    DeleteUser
-}
+  GetUsers,
+  CreateUser,
+  UpdateUsers,
+  DeleteUser,
+};
