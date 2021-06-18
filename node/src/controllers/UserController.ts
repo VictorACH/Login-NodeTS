@@ -19,11 +19,11 @@ const GetUsers = async (req: Request, res: Response) => {
   try {
     const userQuery = Users.find({}).skip(from).limit(limit).exec();
     const userDocuments = Users.countDocuments().exec();
-    await Promise.all([userQuery, userDocuments]);
+    const [users, items] = await Promise.all([userQuery, userDocuments]);
 
     return res.status(response.status).json({
-      users: userQuery,
-      items: userDocuments,
+      users,
+      items,
     });
   } catch (error) {
     response = {
@@ -45,6 +45,7 @@ const CreateUser = async (req: Request, res: Response) => {
     role,
     password: bcrypt.hashSync(password, 10),
   });
+
   let response = getDefaultResponse();
 
   try {
