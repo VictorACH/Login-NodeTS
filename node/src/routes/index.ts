@@ -1,14 +1,18 @@
 import express, { Application } from 'express';
 import userRoutes from '../routes/users';
-import loginRoute from '../routes/login';
+import loginRoutes from '../routes/login';
+import meRoutes from '../routes/me';
 
 
 const app: Application = express();
 
 // Login
-app.use(loginRoute);
+app.use(loginRoutes);
 
 // Users
 app.use(userRoutes);
+
+// Me
+app.use(meRoutes);
 
 export = app;
