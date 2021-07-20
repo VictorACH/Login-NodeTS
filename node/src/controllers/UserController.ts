@@ -36,28 +36,40 @@ const GetUsers = async (req: Request, res: Response) => {
 };
 
 const CreateUser = async (req: Request, res: Response) => {
+  let response = getDefaultResponse();
   const body = req.body;
   const { name, email, password, role } = body;
 
-  const user = new Users({
-    name,
-    email,
-    role,
-    password: bcrypt.hashSync(password, 10),
-  });
+  // Check if email already exist on MongoDB
+  const userQuery = await Promise.all([Users.findOne({email}).exec()]);
 
-  let response = getDefaultResponse();
-
-  try {
-    const userDb = await user.save();
-    res.status(201).json({
-      user: userDb,
+  // If the email does not exist in MongoDB, a new user is created.
+  if (userQuery[0] === null) {
+    const user = new Users({
+      name,
+      email,
+      role,
+      password: bcrypt.hashSync(password, 10),
     });
-  } catch (error) {
+  
+    try {
+      const userDb = await user.save();
+      res.status(201).json({
+        user: userDb,
+      });
+    } catch (error) {
+      response = {
+        status: 400,
+        message: error.message,
+        type: error.name,
+      };
+      return res.status(response.status).json(response);
+    }
+  } else {
     response = {
       status: 400,
-      message: error.message,
-      type: error.name,
+      message: 'User already created, please try with another email.',
+      type: 'user_already_created',
     };
     return res.status(response.status).json(response);
   }
