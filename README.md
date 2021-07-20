@@ -4,9 +4,8 @@ Login created with Node typescript that can be used with ["Postman collections"]
 ## Features
  - JWT authentication
  - CRUD of users
-
-## Coming soon
  - Unit test
+
 
 ## Installation
 
@@ -22,6 +21,20 @@ After the installation, to launch the server you must go to the path where you h
 ```
 npm run dev
 ```
+
+## Test
+To launch the tests you only need to type the following command:
+
+```
+npm run test
+```
+The command "npm run test" launches the following line in the console:
+
+```
+jest --detectOpenHandles --collectCoverage
+```
+
+If you want to modify the tests without detecting open handles or without collect coverage, just remove the commands in the "script -> test" property of the "package.json" file.
 
 ## License
 
