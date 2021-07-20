@@ -29,4 +29,9 @@ mongoose.connect('mongodb://localhost:27017/victorACH', (err: unknown) => {
     console.log('Connected to: mongodb://localhost:27017/victorACH');
   });
   
-  app.listen(config.SERVER, () => console.log('Server up!'));
+const server = app.listen(config.SERVER.port, () => console.log('Server up!, port: '+ config.SERVER.port));
+
+export {
+  app,
+  server
+}
