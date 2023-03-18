@@ -27,11 +27,11 @@ mongoose.set('useUnifiedTopology', true);
 mongoose.connect('mongodb://localhost:27017/victorACH', (err: unknown) => {
     if (err) throw err;
     console.log('Connected to: mongodb://localhost:27017/victorACH');
-  });
+});
   
 const server = app.listen(config.SERVER.port, () => console.log('Server up!, port: '+ config.SERVER.port));
 
 export {
-  app,
-  server
+    app,
+    server
 }

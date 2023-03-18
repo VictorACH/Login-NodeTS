@@ -24,6 +24,10 @@
     "public"
   ],
   "rules": {
+    "indent": [
+      "error",
+      4
+    ],
     "quotes": [
       "warn",
       "single",
